@@ -11,6 +11,9 @@ console = Console(highlight=False)
 console.line(2)
 console.rule('[bold #d55252]CapsWriter Offline Server'); console.line()
 console.print(f'当前基文件夹：[cyan underline]{BASE_DIR}', end='\n\n')
+import sys
+
+print(f"Python 版本：{sys.version}")
 
 from pathlib import Path
 import time
@@ -24,7 +27,9 @@ import sherpa_onnx
 from funasr_onnx import CT_Transformer
 
 from util.chinese_itn import chinese_to_num
-
+import opencc
+# 导入繁体中文转换器
+converter = opencc.OpenCC('s2tw')  # 使用你的繁体中文转换配置文件路径
 
 # ============================全局变量和检查区====================================
 
@@ -138,8 +143,11 @@ async def ws_serve(websocket, path):
             # 调整中英空格排版
             if format_spell:
                 result_final = result_4 = en_in_zh.sub(adjust_space, result_final)
+                # 对最终结果进行繁体中文转换
+                result_final_traditional = converter.convert(result_final)
+            
 
-            await websocket.send(result_final)
+            await websocket.send(result_final_traditional)
             console.print(f'''
     识别粗结果：{result_0}
     转数字后后：{result_1}
